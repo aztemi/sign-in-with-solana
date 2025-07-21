@@ -1,0 +1,33 @@
+<?php
+/**
+ * Plugin Name: Sign-in With Solana
+ * Plugin URI:  https://apps.aztemi.com/sign-in-with-solana
+ * Description: Authenticate with Solana Wallets.
+ * Version:     0.1.0
+ * Author:      AZTemi
+ * Author URI:  https://apps.aztemi.com/sign-in-with-solana
+ * License:     GPLv3 or later
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
+ * Text Domain: sign-in-with-solana
+ * Domain Path: /languages
+ *
+ * Requires PHP:         7.2
+ * Requires at least:    5.2
+ * Tested up to:         6.8.2
+ *
+ * @package AZTemi\Sign_In_With_Solana
+ */
+
+namespace AZTemi\Sign_In_With_Solana;
+
+// die if accessed directly
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
+
+// initialize the plugin
+function init_plugin() {
+}
+
+// initialize plugin on plugins_loaded
+add_action( 'plugins_loaded', __NAMESPACE__ . '\init_plugin' );
