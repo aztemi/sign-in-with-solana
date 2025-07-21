@@ -27,6 +27,9 @@ if ( ! defined( 'WPINC' ) ) {
 
 // initialize the plugin
 function init_plugin() {
+	// define named constants
+	require_once __DIR__ . '/includes/constants.php';
+	define_constants( __DIR__, __FILE__ );
 }
 
 // initialize plugin on plugins_loaded
