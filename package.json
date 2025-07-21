@@ -1,0 +1,41 @@
+{
+  "name": "sign-in-with-solana",
+  "version": "0.1.0",
+  "description": "Authenticate with Solana Wallet",
+  "author": "aztemi",
+  "license": "GPL-3.0-or-later",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "postinstall": "composer install",
+    "build": "wp-scripts build",
+    "lint": "composer run-script lint && wp-scripts lint-js && wp-scripts lint-style",
+    "format": "composer run-script format && wp-scripts format",
+    "makepot": "composer run-script makepot",
+    "package": "wp-scripts plugin-zip",
+    "nuke": "rm -rf build vendor node_modules composer.lock package-lock.json *.zip",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aztemi/login-with-solana.git"
+  },
+  "keywords": [
+    "Solana",
+    "WordPress",
+    "Sign-in",
+    "Crypto"
+  ],
+  "bugs": {
+    "url": "https://github.com/aztemi/sign-in-with-solana/issues"
+  },
+  "homepage": "https://github.com/aztemi/sign-in-with-solana#readme",
+  "devDependencies": {
+    "@wordpress/eslint-plugin": "^22.12.0",
+    "@wordpress/prettier-config": "^4.26.0",
+    "@wordpress/scripts": "^30.19.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.6.2",
+    "prettier-plugin-organize-imports": "^4.1.0"
+  }
+}

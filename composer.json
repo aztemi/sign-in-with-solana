@@ -1,0 +1,29 @@
+{
+  "name": "aztemi/sign-in-with-solana",
+  "version": "0.1.0",
+  "description": "Authenticate with Solana Wallet",
+  "author": "aztemi",
+  "type": "wordpress-plugin",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "lint": [
+      "phpcs --standard=pbs-rules-set.xml --warning-severity=0 --report-source --report-full=phpcs-report.txt --extensions=php,html ."
+    ],
+    "format": [
+      "phpcbf --standard=pbs-rules-set.xml --warning-severity=0 --report-source --report-full=phpcs-report.txt --extensions=php,html ."
+    ],
+    "makepot": [
+      "WP_CLI_PHP_ARGS=\"-d memory_limit=2G\" wp i18n make-pot . ./languages/sign-in-with-solana.pot --domain=sign-in-with-solana"
+    ]
+  },
+  "require-dev": {
+    "wp-cli/wp-cli-bundle": "^2.10.0",
+    "woocommerce/woocommerce-sniffs": "^1.0.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  }
+}
