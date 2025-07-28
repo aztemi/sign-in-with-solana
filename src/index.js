@@ -18,6 +18,6 @@ jQuery(function ($) {
   }
 
   $(() => {
-    loadSvelte();
+    if ($(`.${SignInWithSolana.pluginId}`).length) loadSvelte();
   });
 });
