@@ -40,6 +40,12 @@ class Sign_In_With_Solana {
 		// enqueue style and javascript files
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+
+		// add Sign-in button to login pages
+		add_action( 'login_form', array( $this, 'add_sign_in_button' ) );
+		if ( is_woocommerce_activated() ) {
+			add_action( 'woocommerce_login_form', array( $this, 'add_sign_in_button' ) );
+		}
 	}
 
 
@@ -76,11 +82,11 @@ class Sign_In_With_Solana {
 		switch ( $component['type'] ) {
 			case 'link_button':
 				$str = '<a %s href="">%s</a>';
-				$extra_cls = 'button';
+				$extra_cls = 'button wp-block-button__link';
 				break;
 			case 'button':
 				$str = '<button %s type="button">%s</button>';
-				$extra_cls = 'button';
+				$extra_cls = 'button wp-element-button';
 				break;
 			case 'span':
 				$str = '<span %s>%s</span>';
@@ -119,5 +125,14 @@ class Sign_In_With_Solana {
 			)
 		);
 		wp_enqueue_script( $handle );
+	}
+
+
+	/**
+	 * Add Sign-in button to the login page
+	 */
+	public function add_sign_in_button() {
+		$short = '[' . get_hook_name('sign_in_button') . ']';
+		echo wp_kses_post( '<div style="margin-bottom: 1rem">' . do_shortcode( $short ) . '</div>' );
 	}
 }

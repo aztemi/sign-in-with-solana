@@ -28,3 +28,13 @@ if ( ! defined( 'WPINC' ) ) {
 function get_hook_name( $name ) {
 	return strtolower( str_replace( '-', '_', PLUGIN_ID . '_' . $name ) );
 }
+
+
+/**
+ * Check if WooCommerce plugin is activated or not.
+ *
+ * @return bool true if WooCommerce is activated, otherwise false.
+ */
+function is_woocommerce_activated() {
+	return in_array( 'woocommerce/woocommerce.php', get_option( 'active_plugins', array() ) );
+}
