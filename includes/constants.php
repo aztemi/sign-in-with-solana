@@ -17,11 +17,13 @@ if ( ! defined( 'WPINC' ) ) {
  * Define constants
  */
 function define_constants( $dir, $file ) {
-	define_constant( 'PLUGIN_ID', 'login-with-solana' );
+	define_constant( 'PLUGIN_ID', 'sign-in-with-solana' );
 	define_constant( 'PLUGIN_DIR', $dir );
 	define_constant( 'PLUGIN_FILE', $file );
 	define_constant( 'PLUGIN_URL', untrailingslashit( plugin_dir_url( PLUGIN_FILE ) ) );
 	define_constant( 'PLUGIN_BASENAME', plugin_basename( PLUGIN_FILE ) );
+
+	define_constant( 'WALLET_ADDRESS_USER_META_KEY', PLUGIN_ID . '_wallet_address' );
 }
 
 

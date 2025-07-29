@@ -46,6 +46,17 @@ class Sign_In_With_Solana {
 		if ( is_woocommerce_activated() ) {
 			add_action( 'woocommerce_login_form', array( $this, 'add_sign_in_button' ) );
 		}
+
+		// add wallet address field to user profile
+		add_action( 'show_user_profile', array( $this, 'show_wallet_address_in_user_profile' ) );
+		add_action( 'edit_user_profile', array( $this, 'show_wallet_address_in_user_profile' ) );
+		add_action( 'personal_options_update', array( $this, 'save_wallet_address_to_user_meta' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'save_wallet_address_to_user_meta' ) );
+
+		// add wallet address column to users table list
+		add_filter( 'manage_users_columns', array( $this, 'add_column_to_users_table' ) );
+		add_filter( 'wpmu_users_columns', array( $this, 'add_column_to_users_table' ) );
+		add_filter( 'manage_users_custom_column', array( $this, 'show_wallet_address_in_users_table' ), 10, 3 );
 	}
 
 
@@ -134,5 +145,90 @@ class Sign_In_With_Solana {
 	public function add_sign_in_button() {
 		$short = '[' . get_hook_name('sign_in_button') . ']';
 		echo wp_kses_post( '<div style="margin-bottom: 1rem">' . do_shortcode( $short ) . '</div>' );
+	}
+
+
+	/**
+	 * Add custom wallet address field to the user profile page
+	 */
+	public function show_wallet_address_in_user_profile( $user ) {
+		?>
+		<?php wp_nonce_field( 'wallet_address_settings', 'wallet_address_settings_nonce', false ); ?>
+		<table class="form-table <?php esc_attr_e( PLUGIN_ID ); ?>-table" role="presentation">
+		<tr>
+			<th>
+				<label for="solana_wallet_address"><?php esc_html_e('Solana Wallet Address', 'sign-in-with-solana'); ?></label>
+			</th>
+			<td>
+				<input class="regular-text" style="min-width: 32em" id="solana_wallet_address" name="solana_wallet_address" type="text"
+					value="<?php esc_attr_e( get_user_meta( $user->ID, WALLET_ADDRESS_USER_META_KEY, true ) ); ?>" />
+				<p class="description"><?php esc_html_e( 'If provided, the user will be able to sign in using the wallet.', 'sign-in-with-solana' ); ?></p>
+			</td>
+		</tr>
+		</table>
+		<?php
+	}
+
+
+	/**
+	 * Load required dependencies for this class
+	 */
+	private function get_user_by_wallet_address( $address ) {
+		if ( empty( $address ) ) {
+			return null;
+		}
+
+		$users = get_users( array(
+			'meta_key'   => WALLET_ADDRESS_USER_META_KEY,
+			'meta_value' => $address,
+			'number'     => 1
+		) );
+
+		$user = is_wp_error( $users ) ? null : reset( $users );
+
+		return $user;
+	}
+
+
+	/**
+	 * Save custom wallet address to user metadata
+	 */
+	public function save_wallet_address_to_user_meta( $user_id ) {
+		if ( isset( $_POST['wallet_address_settings_nonce'] ) ) {
+			check_admin_referer( 'wallet_address_settings', 'wallet_address_settings_nonce' );
+
+			if ( current_user_can( 'edit_user', $user_id ) && isset( $_POST['solana_wallet_address'] ) ) {
+				$wallet_address = trim( sanitize_text_field( $_POST['solana_wallet_address'] ) );
+
+				if ( ! empty( $wallet_address ) && ! preg_match( '/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $wallet_address ) ) {
+					wp_die( __('Specified Solana wallet address is invalid', 'sign-in-with-solana') );
+				}
+
+				if ( $this->get_user_by_wallet_address( $wallet_address ) ) {
+					wp_die( __('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
+				}
+
+				update_user_meta( $user_id, WALLET_ADDRESS_USER_META_KEY, $wallet_address );
+			}
+		}
+	}
+
+
+	/**
+	 * Add wallet address column to the users list table
+	 */
+	public function add_column_to_users_table( array $columns ) {
+		$columns['solana_wallet_address'] = __('Wallet Address', 'sign-in-with-solana');
+		return $columns;
+	}
+
+
+	/**
+	 * Show users wallet address on the column in the users list table
+	 */
+	public function show_wallet_address_in_users_table( $output, $column_name, $user_id ) {
+		if ( 'solana_wallet_address' === $column_name ) {
+			return esc_attr( shorten_address( get_user_meta( $user_id, WALLET_ADDRESS_USER_META_KEY, true ) ) );
+		}
 	}
 }

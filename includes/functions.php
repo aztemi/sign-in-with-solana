@@ -38,3 +38,16 @@ function get_hook_name( $name ) {
 function is_woocommerce_activated() {
 	return in_array( 'woocommerce/woocommerce.php', get_option( 'active_plugins', array() ) );
 }
+
+
+/**
+ * Shorten a given wallet address
+ *
+ * by returning the first 6 and last 6 characters, with "..." in between.
+ *
+ * @param string|null $address The address string to shorten.
+ * @return string The shortened address or an empty string if input is null or empty.
+ */
+function shorten_address( $address ) {
+    return empty( $address ) ? '' : substr( $address, 0, 6 ) . '...' . substr( $address, -6 );
+}
