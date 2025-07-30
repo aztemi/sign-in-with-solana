@@ -41,6 +41,9 @@ class Sign_In_With_Solana {
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
+		// allow display in wp_kses styles
+		add_filter( 'safe_style_css', array( $this, 'define_safe_style_css' ) );
+
 		// add Sign-in button to login pages
 		add_action( 'login_form', array( $this, 'add_sign_in_button' ) );
 		if ( is_woocommerce_activated() ) {
@@ -140,11 +143,20 @@ class Sign_In_With_Solana {
 
 
 	/**
+	 * Define safe CSS styles allowed with wp_kses
+	 */
+	public function define_safe_style_css( $styles ) {
+		$styles[] = 'display';
+		return $styles;
+	}
+
+
+	/**
 	 * Add Sign-in button to the login page
 	 */
 	public function add_sign_in_button() {
 		$short = '[' . get_hook_name('sign_in_button') . ']';
-		echo wp_kses_post( '<div style="margin-bottom: 1rem">' . do_shortcode( $short ) . '</div>' );
+		echo wp_kses_post( '<div style="display:none;clear:both;padding-top:1rem">' . do_shortcode( $short ) . '</div>' );
 	}
 
 
