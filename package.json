@@ -36,7 +36,6 @@
     "@wordpress/scripts": "^30.19.0",
     "css-loader": "^6.7.1",
     "eslint": "^8.57.1",
-    "mini-css-extract-plugin": "^2.6.0",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "svelte": "^4.0.0",
