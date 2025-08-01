@@ -40,5 +40,9 @@
     "prettier-plugin-organize-imports": "^4.1.0",
     "svelte": "^4.0.0",
     "svelte-loader": "^3.1.9"
+  },
+  "dependencies": {
+    "@aztemi/svelte-on-solana-wallet-adapter-core": "^1.2.1",
+    "@aztemi/svelte-on-solana-wallet-adapter-ui": "^1.2.1"
   }
 }

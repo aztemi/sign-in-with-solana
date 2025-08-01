@@ -122,6 +122,14 @@ class Sign_In_With_Solana {
 	 * Register JS scripts and CSS styles
 	 */
 	public function enqueue_scripts() {
+		// enqueue css files
+		$css = '/build/326.css';
+		$css_url = PLUGIN_URL . $css;
+		$css_dir = PLUGIN_DIR . $css;
+		$handle  = PLUGIN_ID . '_css';
+		wp_enqueue_style( $handle, $css_url, array(), filemtime( $css_dir ) );
+		wp_style_add_data( $handle, 'rtl', 'replace' );
+
 		// enqueue js files
 		$js  = PLUGIN_URL . '/build/index.js';
 		$php = PLUGIN_DIR . '/build/index.asset.php';
