@@ -31,9 +31,10 @@ function init_plugin() {
 	require_once __DIR__ . '/includes/constants.php';
 	define_constants( __DIR__, __FILE__ );
 
-	// load plugin core class and initialize its instance
+	// load plugin core class, initialize and run its instance
 	require_once __DIR__ . '/includes/class-sign-in-with-solana.php';
-	new Sign_In_With_Solana();
+	$plugin = new Sign_In_With_Solana();
+	$plugin->run();
 }
 
 // initialize plugin on plugins_loaded

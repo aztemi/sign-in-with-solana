@@ -17,6 +17,19 @@ class Sign_In_With_Solana {
 
 	public function __construct() {
 		$this->load_dependencies();
+	}
+
+
+	/**
+	 * Register and execute hooks if all dependencies are available
+	 */
+	public function run() {
+		// return if required dependencies are missing
+		if ( ! $this->is_available() ) {
+			return;
+		}
+
+		// register hooks
 		$this->register_hooks();
 		$this->register_ajax_callbacks();
 	}
@@ -74,6 +87,20 @@ class Sign_In_With_Solana {
 		// handler to verify message signature and login user
 		add_action( 'wp_ajax_' . SIGN_IN, array( $this, 'validate_and_login' ) );
 		add_action( 'wp_ajax_nopriv_' . SIGN_IN, array( $this, 'validate_and_login' ) );
+	}
+
+
+	/**
+	 * Validate plugin dependencies.
+	 */
+	private function is_available() {
+		// check if GMP or BCMath extension for base58 decoding is installed
+		if ( ! is_gmp_installed() && ! is_bcmath_installed() ) {
+			show_error_notice( '<b>Sign-in With Solana</b> requires <b>GMP</b> or <b>BCMath</b>. Please install <b>GMP</b> or <b>BCMath</b> extension for PHP.' );
+			return false;
+		}
+
+		return true;
 	}
 
 

@@ -44,6 +44,21 @@ function is_woocommerce_activated() {
 
 
 /**
+ * Display an error notice message on the admin screen.
+ *
+ * @param string $notice Error message to display.
+ */
+function show_error_notice( $notice ) {
+	add_action(
+		'admin_notices',
+		function () use ( $notice ) {
+			echo wp_kses_post( '<div class="notice notice-error"><p>' . $notice . '</p></div>'  );
+		}
+	);
+}
+
+
+/**
  * Generate standardized hook name
  *
  * by prefixing with PLUGIN_ID, replacing dashes with underscores, and converting to lowercase.
