@@ -2,12 +2,12 @@
 Contributors: aztemi, t4top
 Donate link: https://apps.aztemi.com/sign-in-with-solana/donate/
 Tags: solana, wallet, web3, login, authentication, sign-in, crypto, blockchain, woocommerce
-Requires at least: 5.2  
-Tested up to: 6.8.2  
-Requires PHP: 7.2  
-Stable tag: 0.1.0  
-License: GPLv3 or later  
-License URI: https://www.gnu.org/licenses/gpl-3.0.html  
+Requires at least: 5.2
+Tested up to: 6.8
+Requires PHP: 7.2
+Stable tag: 0.1.0
+License: GPLv3 or later
+License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Authenticate users on your WordPress site using Solana wallets. A secure, decentralized login experience.
 

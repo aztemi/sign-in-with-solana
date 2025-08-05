@@ -140,7 +140,7 @@ class Sign_In_With_Solana {
 	 * Return a custom message string for wallet to sign
 	 */
 	private function get_message_to_sign() {
-		return 'Sign with your wallet to verify ownership and login to ' . parse_url( get_site_url(), PHP_URL_HOST ) . '.';
+		return 'Sign with your wallet to verify ownership and login to ' . wp_parse_url( get_site_url(), PHP_URL_HOST ) . '.';
 	}
 
 
@@ -234,14 +234,14 @@ class Sign_In_With_Solana {
 	public function show_wallet_address_in_user_profile( $user ) {
 		?>
 		<?php wp_nonce_field( 'wallet_address_settings', 'wallet_address_settings_nonce', false ); ?>
-		<table class="form-table <?php esc_attr_e( PLUGIN_ID ); ?>-table" role="presentation">
+		<table class="form-table <?php echo esc_attr( PLUGIN_ID ); ?>-table" role="presentation">
 		<tr>
 			<th>
 				<label for="solana_wallet_address"><?php esc_html_e('Solana Wallet Address', 'sign-in-with-solana'); ?></label>
 			</th>
 			<td>
 				<input class="regular-text" style="min-width: 32em" id="solana_wallet_address" name="solana_wallet_address" type="text"
-					value="<?php esc_attr_e( $this->get_user_wallet_address( $user->ID ) ); ?>" />
+					value="<?php echo esc_attr( $this->get_user_wallet_address( $user->ID ) ); ?>" />
 				<p class="description"><?php esc_html_e( 'If provided, the user will be able to sign in using the wallet.', 'sign-in-with-solana' ); ?></p>
 			</td>
 		</tr>
@@ -258,7 +258,7 @@ class Sign_In_With_Solana {
 			check_admin_referer( 'wallet_address_settings', 'wallet_address_settings_nonce' );
 
 			if ( current_user_can( 'edit_user', $user_id ) && isset( $_POST['solana_wallet_address'] ) ) {
-				$address_b58 = trim( sanitize_text_field( $_POST['solana_wallet_address'] ) );
+				$address_b58 = trim( sanitize_text_field( wp_unslash( $_POST['solana_wallet_address'] ) ) );
 				$address_b64 = '';
 
 				if ( ! empty( $address_b58 ) ) {
@@ -317,18 +317,18 @@ class Sign_In_With_Solana {
 	 * - On failure: JSON error with appropriate HTTP status code.
 	 */
 	public function validate_and_login() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( $_POST['nonce'] ), 'ajax_nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ajax_nonce' ) ) {
 			wp_send_json_error( 'Invalid nonce', 403);
 		}
 
 		// retrieve base64-encoded signature
-		$signature_b64 = isset( $_POST['signature'] ) ? trim( sanitize_text_field( $_POST['signature'] ) ) : '';
+		$signature_b64 = isset( $_POST['signature'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['signature'] ) ) ) : '';
 		if ( empty( $signature_b64 ) ) {
 			wp_send_json_error( 'Bad Request - Signature missing', 400 );
 		}
 
 		// retrieve base58-encoded Solana address (public key)
-		$address_b58 = isset( $_POST['address'] ) ? trim( sanitize_text_field( $_POST['address'] ) ) : '';
+		$address_b58 = isset( $_POST['address'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['address'] ) ) ) : '';
 		if ( empty( $address_b58 ) ) {
 			wp_send_json_error( 'Bad Request - Address missing', 400 );
 		}
