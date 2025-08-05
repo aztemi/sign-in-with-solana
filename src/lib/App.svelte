@@ -19,7 +19,9 @@
 
     while (el) {
       el = el.parentElement;
-      if (el && el.tagName.toLowerCase() === targetTag) return el;
+      if (el && el.tagName.toLowerCase() === targetTag) {
+        return el;
+      }
     }
 
     return null;
@@ -28,15 +30,21 @@
   async function signMessageAndLogin(event) {
     // remove previous notices if any
     const notices = document.querySelectorAll('#login_error, #login-message');
-    if (notices?.length) notices.forEach((el) => el.remove());
-    if (loginForm) loginForm.classList.remove('shake');
+    if (notices?.length) {
+      notices.forEach((el) => el.remove());
+    }
+    if (loginForm) {
+      loginForm.classList.remove('shake');
+    }
 
     closeModal();
 
     // connect to selected wallet
     select(event.detail);
     await connect();
-    if (!publicKey) return;
+    if (!publicKey) {
+      return;
+    }
 
     const { ajaxUrl, action, nonce, message } = SignInWithSolana;
 
@@ -76,13 +84,19 @@
 
   function updateSignInButton() {
     const signInBtn = document.querySelector('[data-attr="sign_in_button"]');
-    if (!signInBtn) return;
+    if (!signInBtn) {
+      return;
+    }
+
     signInBtn.addEventListener('click', handleSignInButtonClick);
 
     const containerDiv = getParent(signInBtn, 'div');
     if (containerDiv) {
       loginForm = getParent(containerDiv, 'form');
-      if (loginForm) loginForm.appendChild(containerDiv);
+      if (loginForm) {
+        loginForm.appendChild(containerDiv);
+      }
+
       containerDiv.style.display = 'block';
     }
 

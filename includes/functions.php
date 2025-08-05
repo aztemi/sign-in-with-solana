@@ -60,7 +60,6 @@ function show_error_notice( $notice ) {
 
 /**
  * Generate standardized hook name
- *
  * by prefixing with PLUGIN_ID, replacing dashes with underscores, and converting to lowercase.
  *
  * Example:
@@ -77,7 +76,6 @@ function get_hook_name( $name ) {
 
 /**
  * Shorten a given wallet address
- *
  * by returning the first 6 and last 6 characters, with "..." in between.
  *
  * @param string|null $address The address string to shorten.
@@ -105,8 +103,8 @@ function base58_decode_gmp( $input ) {
 		$char = $input[ $i ];
 		$pos = strpos( $alphabet, $char );
 
-		if ( $pos === false ) {
-			throw new InvalidArgumentException( "Invalid Base58 character: $char" );
+		if ( false === $pos ) {
+			throw new InvalidArgumentException( esc_attr( "Invalid Base58 character: $char" ) );
 		}
 
 		$decoded = gmp_add( gmp_mul( $decoded, $base ), $pos );
@@ -121,7 +119,7 @@ function base58_decode_gmp( $input ) {
 
 	// handle leading zeros (represented as "1" in base58)
 	$pad = 0;
-	while ( $pad < $length && $input[ $pad ] === '1' ) {
+	while ( $pad < $length && '1' === $input[ $pad ] ) {
 		$pad++;
 	}
 
@@ -147,8 +145,8 @@ function base58_decode_bcmath( $input ) {
 		$char = $input[ $i ];
 		$pos = strpos( $alphabet, $char );
 
-		if ( $pos === false ) {
-			throw new InvalidArgumentException( "Invalid Base58 character: $char" );
+		if ( false === $pos ) {
+			throw new InvalidArgumentException( esc_attr( "Invalid Base58 character: $char" ) );
 		}
 
 		$num = bcmul( $num, $base );
@@ -164,11 +162,11 @@ function base58_decode_bcmath( $input ) {
 	}
 
 	// Convert hex to binary
-	$binary = $hex === '' ? '' : hex2bin( $hex );
+	$binary = '' === $hex ? '' : hex2bin( $hex );
 
 	// Handle leading zeros (encoded as '1's in Base58)
 	$pad = 0;
-	while ( $pad < $length && $input[ $pad ] === '1' ) {
+	while ( $pad < $length && '1' === $input[ $pad ] ) {
 		$pad++;
 	}
 

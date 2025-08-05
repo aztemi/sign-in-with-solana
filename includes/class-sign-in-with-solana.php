@@ -120,7 +120,7 @@ class Sign_In_With_Solana {
 		$users = get_users( array(
 			'meta_key'   => WALLET_ADDRESS_BASE58_META_KEY,
 			'meta_value' => $address_b58,
-			'number'     => 1
+			'number'     => 1,
 		) );
 
 		return is_wp_error( $users ) ? null : reset( $users );
@@ -163,7 +163,7 @@ class Sign_In_With_Solana {
 		$signature = base64_decode( $signature_b64 );
 		$public_key = base64_decode( $public_key_b64 );
 
-		if ( ( strlen( $signature ) !== SODIUM_CRYPTO_SIGN_BYTES ) || ( strlen( $public_key ) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES ) )  {
+		if ( ( strlen( $signature ) !== SODIUM_CRYPTO_SIGN_BYTES ) || ( strlen( $public_key ) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES ) ) {
 			return false;
 		}
 
@@ -263,17 +263,17 @@ class Sign_In_With_Solana {
 
 				if ( ! empty( $address_b58 ) ) {
 					if ( ! $this->is_solana_wallet_address( $address_b58 ) ) {
-						wp_die( __('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+						wp_die( esc_attr__('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
 					}
 
 					$user = $this->get_user_by_wallet_address( $address_b58 );
 					if ( $user && $user->ID !== $user_id ) {
-						wp_die( __('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
+						wp_die( esc_attr__('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
 					}
 
 					$address_binary = $this->base58_decode( $address_b58 );
 					if ( 32 !== strlen( $address_binary ) ) { // Solana pubkeys are 32 bytes
-						wp_die( __('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+						wp_die( esc_attr__('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
 					}
 					$address_b64 = base64_encode($address_binary);
 				}
@@ -317,7 +317,7 @@ class Sign_In_With_Solana {
 	 * - On failure: JSON error with appropriate HTTP status code.
 	 */
 	public function validate_and_login() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'ajax_nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( $_POST['nonce'] ), 'ajax_nonce' ) ) {
 			wp_send_json_error( 'Invalid nonce', 403);
 		}
 
