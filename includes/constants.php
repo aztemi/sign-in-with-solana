@@ -23,7 +23,8 @@ function define_constants( $dir, $file ) {
 	define_constant( 'PLUGIN_URL', untrailingslashit( plugin_dir_url( PLUGIN_FILE ) ) );
 	define_constant( 'PLUGIN_BASENAME', plugin_basename( PLUGIN_FILE ) );
 
-	define_constant( 'WALLET_ADDRESS_USER_META_KEY', PLUGIN_ID . '_wallet_address' );
+	define_constant( 'WALLET_ADDRESS_BASE58_META_KEY', PLUGIN_ID . '_wallet_address_b58' );
+	define_constant( 'WALLET_ADDRESS_BASE64_META_KEY', PLUGIN_ID . '_wallet_address_b64' );
 }
 
 

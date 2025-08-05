@@ -64,6 +64,41 @@ class Sign_In_With_Solana {
 
 
 	/**
+	 * Check if specified address conforms with Solana wallet address spec or not
+	 */
+	private function is_solana_wallet_address( $address ) {
+		return preg_match( '/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $address );
+	}
+
+
+	/**
+	 * Find a user account by base58-encoded wallet address
+	 */
+	private function get_user_by_wallet_address( $address_b58 ) {
+		if ( empty( $address_b58 ) ) {
+			return null;
+		}
+
+		$users = get_users( array(
+			'meta_key'   => WALLET_ADDRESS_BASE58_META_KEY,
+			'meta_value' => $address_b58,
+			'number'     => 1
+		) );
+
+		return is_wp_error( $users ) ? null : reset( $users );
+	}
+
+
+	/**
+	 * Return user wallet address in specified encoding
+	 */
+	private function get_user_wallet_address( $user_id, $encoding = 'b58' ) {
+		$key = 'b64' === $encoding ? WALLET_ADDRESS_BASE64_META_KEY : WALLET_ADDRESS_BASE58_META_KEY;
+		return get_user_meta( $user_id, $key, true );
+	}
+
+
+	/**
 	 * Load and configure all supported components
 	 */
 	public function configure_components() {
@@ -181,32 +216,12 @@ class Sign_In_With_Solana {
 			</th>
 			<td>
 				<input class="regular-text" style="min-width: 32em" id="solana_wallet_address" name="solana_wallet_address" type="text"
-					value="<?php esc_attr_e( get_user_meta( $user->ID, WALLET_ADDRESS_USER_META_KEY, true ) ); ?>" />
+					value="<?php esc_attr_e( $this->get_user_wallet_address( $user->ID ) ); ?>" />
 				<p class="description"><?php esc_html_e( 'If provided, the user will be able to sign in using the wallet.', 'sign-in-with-solana' ); ?></p>
 			</td>
 		</tr>
 		</table>
 		<?php
-	}
-
-
-	/**
-	 * Load required dependencies for this class
-	 */
-	private function get_user_by_wallet_address( $address ) {
-		if ( empty( $address ) ) {
-			return null;
-		}
-
-		$users = get_users( array(
-			'meta_key'   => WALLET_ADDRESS_USER_META_KEY,
-			'meta_value' => $address,
-			'number'     => 1
-		) );
-
-		$user = is_wp_error( $users ) ? null : reset( $users );
-
-		return $user;
 	}
 
 
@@ -218,17 +233,28 @@ class Sign_In_With_Solana {
 			check_admin_referer( 'wallet_address_settings', 'wallet_address_settings_nonce' );
 
 			if ( current_user_can( 'edit_user', $user_id ) && isset( $_POST['solana_wallet_address'] ) ) {
-				$wallet_address = trim( sanitize_text_field( $_POST['solana_wallet_address'] ) );
+				$address_b58 = trim( sanitize_text_field( $_POST['solana_wallet_address'] ) );
+				$address_b64 = '';
 
-				if ( ! empty( $wallet_address ) && ! preg_match( '/^[1-9A-HJ-NP-Za-km-z]{32,44}$/', $wallet_address ) ) {
-					wp_die( __('Specified Solana wallet address is invalid', 'sign-in-with-solana') );
+				if ( ! empty( $address_b58 ) ) {
+					if ( ! $this->is_solana_wallet_address( $address_b58 ) ) {
+						wp_die( __('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+					}
+
+					$user = $this->get_user_by_wallet_address( $address_b58 );
+					if ( $user && $user->ID !== $user_id ) {
+						wp_die( __('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
+					}
+
+					$address_binary = $this->base58_decode( $address_b58 );
+					if ( 32 !== strlen( $address_binary ) ) { // Solana pubkeys are 32 bytes
+						wp_die( __('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+					}
+					$address_b64 = base64_encode($address_binary);
 				}
 
-				if ( $this->get_user_by_wallet_address( $wallet_address ) ) {
-					wp_die( __('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
-				}
-
-				update_user_meta( $user_id, WALLET_ADDRESS_USER_META_KEY, $wallet_address );
+				update_user_meta( $user_id, WALLET_ADDRESS_BASE58_META_KEY, $address_b58 );
+				update_user_meta( $user_id, WALLET_ADDRESS_BASE64_META_KEY, $address_b64 );
 			}
 		}
 	}
@@ -248,7 +274,7 @@ class Sign_In_With_Solana {
 	 */
 	public function show_wallet_address_in_users_table( $output, $column_name, $user_id ) {
 		if ( 'solana_wallet_address' === $column_name ) {
-			return esc_attr( shorten_address( get_user_meta( $user_id, WALLET_ADDRESS_USER_META_KEY, true ) ) );
+			return esc_attr( shorten_address( $this->get_user_wallet_address( $user_id ) ) );
 		}
 	}
 }
