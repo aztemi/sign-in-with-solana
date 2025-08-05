@@ -18,6 +18,7 @@ class Sign_In_With_Solana {
 	public function __construct() {
 		$this->load_dependencies();
 		$this->register_hooks();
+		$this->register_ajax_callbacks();
 	}
 
 
@@ -64,6 +65,19 @@ class Sign_In_With_Solana {
 
 
 	/**
+	 * Register callback handlers for AJAX requests
+	 */
+	private function register_ajax_callbacks() {
+		// action
+		define_constant( 'SIGN_IN', get_hook_name('sign_in') );
+
+		// handler to verify message signature and login user
+		add_action( 'wp_ajax_' . SIGN_IN, array( $this, 'validate_and_login' ) );
+		add_action( 'wp_ajax_nopriv_' . SIGN_IN, array( $this, 'validate_and_login' ) );
+	}
+
+
+	/**
 	 * Check if specified address conforms with Solana wallet address spec or not
 	 */
 	private function is_solana_wallet_address( $address ) {
@@ -95,6 +109,41 @@ class Sign_In_With_Solana {
 	private function get_user_wallet_address( $user_id, $encoding = 'b58' ) {
 		$key = 'b64' === $encoding ? WALLET_ADDRESS_BASE64_META_KEY : WALLET_ADDRESS_BASE58_META_KEY;
 		return get_user_meta( $user_id, $key, true );
+	}
+
+
+	/**
+	 * Return a custom message string for wallet to sign
+	 */
+	private function get_message_to_sign() {
+		return 'Sign with your wallet to verify ownership and login to ' . parse_url( get_site_url(), PHP_URL_HOST ) . '.';
+	}
+
+
+	/**
+	 * Decode a Base58-encoded string to binary
+	 */
+	private function base58_decode( $address ) {
+		try {
+			return is_gmp_installed() ? base58_decode_gmp( $address ) : base58_decode_bcmath( $address );
+		} catch ( \Exception $e ) {
+			return '';
+		}
+	}
+
+
+	/**
+	 * Verify a Solana signature given base64-encoded inputs
+	 */
+	private function verify_signature_base64( $message, $signature_b64, $public_key_b64 ) {
+		$signature = base64_decode( $signature_b64 );
+		$public_key = base64_decode( $public_key_b64 );
+
+		if ( ( strlen( $signature ) !== SODIUM_CRYPTO_SIGN_BYTES ) || ( strlen( $public_key ) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES ) )  {
+			return false;
+		}
+
+		return sodium_crypto_sign_verify_detached( $signature, $message, $public_key );
 	}
 
 
@@ -177,8 +226,11 @@ class Sign_In_With_Solana {
 			$handle,
 			'SignInWithSolana',
 			array(
-				'ajaxurl'  => admin_url( 'admin-ajax.php' ),
-				'pluginId' => PLUGIN_ID
+				'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
+				'pluginId' => PLUGIN_ID,
+				'action'   => SIGN_IN,
+				'nonce'    => wp_create_nonce('ajax_nonce'),
+				'message'  => $this->get_message_to_sign(),
 			)
 		);
 		wp_enqueue_script( $handle );
@@ -276,5 +328,65 @@ class Sign_In_With_Solana {
 		if ( 'solana_wallet_address' === $column_name ) {
 			return esc_attr( shorten_address( $this->get_user_wallet_address( $user_id ) ) );
 		}
+	}
+
+
+	/**
+	 * Validate message signature and log in user if valid.
+	 *
+	 * Expected POST parameters:
+	 * - nonce     (string) : AJAX nonce for CSRF protection.
+	 * - signature (string) : Base64-encoded signature of the message to verify identity.
+	 * - address   (string) : Base58-encoded public wallet address (Solana public key).
+	 *
+	 * Response:
+	 * - On success: JSON object with 'message' and 'redirect' URL.
+	 * - On failure: JSON error with appropriate HTTP status code.
+	 */
+	public function validate_and_login() {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'ajax_nonce' ) ) {
+			wp_send_json_error( 'Invalid nonce', 403);
+		}
+
+		// retrieve base64-encoded signature
+		$signature_b64 = isset( $_POST['signature'] ) ? trim( sanitize_text_field( $_POST['signature'] ) ) : '';
+		if ( empty( $signature_b64 ) ) {
+			wp_send_json_error( 'Bad Request - Signature missing', 400 );
+		}
+
+		// retrieve base58-encoded Solana address (public key)
+		$address_b58 = isset( $_POST['address'] ) ? trim( sanitize_text_field( $_POST['address'] ) ) : '';
+		if ( empty( $address_b58 ) ) {
+			wp_send_json_error( 'Bad Request - Address missing', 400 );
+		}
+
+		// get user associated with the wallet address
+		$user = $this->get_user_by_wallet_address( $address_b58 );
+		if ( ! $user ) {
+			wp_send_json_error( 'User account not found', 404 );
+		}
+
+		$user_id = $user->ID;
+		$message  = $this->get_message_to_sign();
+		$address_b64 = $this->get_user_wallet_address( $user_id, 'b64' );
+
+		// verify the signature
+		$verified = $this->verify_signature_base64( $message, $signature_b64, $address_b64 );
+		if ( ! $verified ) {
+			wp_send_json_error( 'Signature verification failed', 403 );
+		}
+
+		// signature is valid, log the user in
+		wp_clear_auth_cookie();
+		wp_set_current_user( $user_id );
+		wp_set_auth_cookie( $user_id, true );
+
+		// set WooCommerce customer auth cookie, if WooCommerce is active
+		if ( is_woocommerce_activated() ) {
+			wc_set_customer_auth_cookie( $user_id );
+		}
+
+		// send success response with redirect URL to wp-admin
+		wp_send_json_success( array( 'message' => 'OK', 'redirect' => esc_url_raw( get_admin_url() ) ), 200 );
 	}
 }
