@@ -1,10 +1,16 @@
 <script>
   import { onMount } from 'svelte';
+  import { Buffer } from 'buffer';
   import { walletStore } from '@aztemi/svelte-on-solana-wallet-adapter-core';
   import { WalletProvider, WalletModal } from '@aztemi/svelte-on-solana-wallet-adapter-ui';
 
   let modalVisible = false;
   let loginForm = null;
+  let wallets = [];
+
+  if (typeof window !== 'undefined' && !window.Buffer) {
+    window.Buffer = Buffer;
+  }
 
   $: ({ publicKey, wallet, connect, select } = $walletStore);
 
@@ -105,12 +111,20 @@
     };
   }
 
-  onMount(() => {
+  async function initWallets() {
+    const { PhantomWalletAdapter, SolflareWalletAdapter, CoinbaseWalletAdapter, LedgerWalletAdapter } = await import(
+      '@solana/wallet-adapter-wallets'
+    );
+    wallets = [new PhantomWalletAdapter(), new SolflareWalletAdapter(), new CoinbaseWalletAdapter(), new LedgerWalletAdapter()];
+  }
+
+  onMount(async () => {
+    await initWallets();
     return updateSignInButton();
   });
 </script>
 
-<WalletProvider />
+<WalletProvider {wallets} />
 
 {#if modalVisible}
   <WalletModal on:close={closeModal} on:connect={signMessageAndLogin} />

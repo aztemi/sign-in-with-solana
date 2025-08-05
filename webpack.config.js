@@ -8,6 +8,9 @@ module.exports = {
     alias: {
       ...defaultConfig.resolve.alias,
       svelte: path.resolve('node_modules', 'svelte/src/runtime'),
+      vm: false,
+      crypto: 'crypto-browserify',
+      stream: 'stream-browserify',
     },
     extensions: [...defaultConfig.resolve?.extensions, '.mjs', '.js', '.svelte'],
     mainFields: [...(defaultConfig.resolve?.mainFields ?? []), 'svelte', 'browser', '...'],
