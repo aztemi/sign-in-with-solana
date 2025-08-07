@@ -411,7 +411,7 @@ class Sign_In_With_Solana {
 			wc_set_customer_auth_cookie( $user_id );
 		}
 
-		// send success response with redirect URL to wp-admin
-		wp_send_json_success( array( 'message' => 'OK', 'redirect' => esc_url_raw( get_admin_url() ) ), 200 );
+		// send success response with redirect URL to user's profile page
+		wp_send_json_success( array( 'message' => 'OK', 'redirect' => esc_url_raw( get_edit_profile_url() ) ), 200 );
 	}
 }
