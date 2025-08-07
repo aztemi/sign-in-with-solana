@@ -59,20 +59,25 @@ class Sign_In_With_Solana {
 
 		// add Sign-in button to login pages
 		add_action( 'login_form', array( $this, 'add_sign_in_button' ) );
-		if ( is_woocommerce_activated() ) {
-			add_action( 'woocommerce_login_form', array( $this, 'add_sign_in_button' ) );
-		}
 
 		// add wallet address field to user profile
 		add_action( 'show_user_profile', array( $this, 'show_wallet_address_in_user_profile' ) );
 		add_action( 'edit_user_profile', array( $this, 'show_wallet_address_in_user_profile' ) );
-		add_action( 'personal_options_update', array( $this, 'save_wallet_address_to_user_meta' ) );
-		add_action( 'edit_user_profile_update', array( $this, 'save_wallet_address_to_user_meta' ) );
+		add_action( 'personal_options_update', array( $this, 'save_user_profile' ) );
+		add_action( 'edit_user_profile_update', array( $this, 'save_user_profile' ) );
 
 		// add wallet address column to users table list
 		add_filter( 'manage_users_columns', array( $this, 'add_column_to_users_table' ) );
 		add_filter( 'wpmu_users_columns', array( $this, 'add_column_to_users_table' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'show_wallet_address_in_users_table' ), 10, 3 );
+
+		// add Sign-in button and wallet address field to WooCommerce
+		if ( is_woocommerce_activated() ) {
+			add_action( 'woocommerce_login_form', array( $this, 'add_sign_in_button' ) );
+			add_action( 'woocommerce_edit_account_form_fields', array( $this, 'add_nonce_field' ) );
+			add_filter( 'woocommerce_edit_account_form_fields', array( $this, 'wc_add_account_form_fields' ), 10, 1 );
+			add_action( 'woocommerce_save_account_details', array( $this, 'wc_save_account_form_fields' ), 10, 1 );
+		}
 	}
 
 
@@ -231,24 +236,10 @@ class Sign_In_With_Solana {
 
 
 	/**
-	 * Add custom wallet address field to the user profile page
+	 * Echo hidden nonce field
 	 */
-	public function show_wallet_address_in_user_profile( $user ) {
-		?>
-		<?php wp_nonce_field( 'wallet_address_settings', 'wallet_address_settings_nonce', false ); ?>
-		<table class="form-table <?php echo esc_attr( PLUGIN_ID ); ?>-table" role="presentation">
-		<tr>
-			<th>
-				<label for="solana_wallet_address"><?php esc_html_e('Solana Wallet Address', 'sign-in-with-solana'); ?></label>
-			</th>
-			<td>
-				<input class="regular-text" style="min-width: 32em" id="solana_wallet_address" name="solana_wallet_address" type="text"
-					value="<?php echo esc_attr( $this->get_user_wallet_address( $user->ID ) ); ?>" />
-				<p class="description"><?php esc_html_e( 'If provided, the user will be able to sign in using the wallet.', 'sign-in-with-solana' ); ?></p>
-			</td>
-		</tr>
-		</table>
-		<?php
+	public function add_nonce_field() {
+		wp_nonce_field( 'wallet_address_settings', 'wallet_address_settings_nonce', false );
 	}
 
 
@@ -265,17 +256,17 @@ class Sign_In_With_Solana {
 
 				if ( ! empty( $address_b58 ) ) {
 					if ( ! $this->is_solana_wallet_address( $address_b58 ) ) {
-						wp_die( esc_attr__('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+						return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
 					}
 
 					$user = $this->get_user_by_wallet_address( $address_b58 );
 					if ( $user && $user->ID !== $user_id ) {
-						wp_die( esc_attr__('Specified wallet address is already linked to another user', 'sign-in-with-solana') );
+						return new \WP_Error( 'wallet_not_valid', __( 'Specified wallet address is already linked to another user', 'sign-in-with-solana' ) );
 					}
 
 					$address_binary = $this->base58_decode( $address_b58 );
 					if ( 32 !== strlen( $address_binary ) ) { // Solana pubkeys are 32 bytes
-						wp_die( esc_attr__('Specified Solana wallet address is not valid', 'sign-in-with-solana') );
+						return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
 					}
 					$address_b64 = base64_encode($address_binary);
 				}
@@ -283,6 +274,65 @@ class Sign_In_With_Solana {
 				update_user_meta( $user_id, WALLET_ADDRESS_BASE58_META_KEY, $address_b58 );
 				update_user_meta( $user_id, WALLET_ADDRESS_BASE64_META_KEY, $address_b64 );
 			}
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * Add custom wallet address field to the user profile page
+	 */
+	public function show_wallet_address_in_user_profile( $user ) {
+		?>
+		<?php $this->add_nonce_field(); ?>
+		<table class="form-table <?php echo esc_attr( PLUGIN_ID ); ?>-table" role="presentation">
+		<tr>
+			<th>
+				<label for="solana_wallet_address"><?php esc_html_e( 'Solana Wallet Address', 'sign-in-with-solana' ); ?></label>
+			</th>
+			<td>
+				<input class="regular-text" style="min-width: 32em" id="solana_wallet_address" name="solana_wallet_address" type="text"
+					value="<?php echo esc_attr( $this->get_user_wallet_address( $user->ID ) ); ?>" />
+				<p class="description"><?php esc_html_e( 'If provided, the user will be able to sign in using the wallet.', 'sign-in-with-solana' ); ?></p>
+			</td>
+		</tr>
+		</table>
+		<?php
+	}
+
+
+	/**
+	 * Save wallet address from user profile
+	 */
+	public function save_user_profile( $user_id ) {
+		$result = $this->save_wallet_address_to_user_meta( $user_id );
+		if ( is_wp_error( $result ) ) {
+			wp_die( esc_attr( $result->get_error_message() ) );
+		}
+	}
+
+
+	/**
+	 * Add custom wallet address field to the WooCommerce customer account details page
+	 */
+	public function wc_add_account_form_fields() {
+		$field_key = 'solana_wallet_address';
+		$form_field = array(
+			'label' => esc_html_e( 'Solana Wallet Address', 'sign-in-with-solana' ),
+			'value' => $this->get_user_wallet_address( get_current_user_id() ),
+		);
+		woocommerce_form_field( $field_key, $form_field, wc_get_post_data_by_key( $field_key, $form_field['value'] ) );
+	}
+
+
+	/**
+	 * Save wallet address from WooCommerce customer account details page
+	 */
+	public function wc_save_account_form_fields( $user_id ) {
+		$result = $this->save_wallet_address_to_user_meta( $user_id );
+		if ( is_wp_error( $result ) ) {
+			wc_add_notice( esc_attr( $result->get_error_message() ), 'error' );
 		}
 	}
 
