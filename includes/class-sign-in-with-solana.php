@@ -57,8 +57,9 @@ class Sign_In_With_Solana {
 		// allow display in wp_kses styles
 		add_filter( 'safe_style_css', array( $this, 'define_safe_style_css' ) );
 
-		// add Sign-in button to login pages
-		add_action( 'login_form', array( $this, 'add_sign_in_button' ) );
+		// add Login & Register buttons
+		add_action( 'login_form', array( $this, 'add_login_button' ) );
+		add_action( 'register_form', array( $this, 'add_register_button' ) );
 
 		// add wallet address field to user profile
 		add_action( 'show_user_profile', array( $this, 'show_wallet_address_in_user_profile' ) );
@@ -71,9 +72,10 @@ class Sign_In_With_Solana {
 		add_filter( 'wpmu_users_columns', array( $this, 'add_column_to_users_table' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'show_wallet_address_in_users_table' ), 10, 3 );
 
-		// add Sign-in button and wallet address field to WooCommerce
+		// add Sign-in buttons and wallet address fields to WooCommerce
 		if ( is_woocommerce_activated() ) {
-			add_action( 'woocommerce_login_form', array( $this, 'add_sign_in_button' ) );
+			add_action( 'woocommerce_login_form', array( $this, 'add_login_button' ) );
+			add_action( 'woocommerce_register_form', array( $this, 'add_register_button' ) );
 			add_action( 'woocommerce_edit_account_form_fields', array( $this, 'add_nonce_field' ) );
 			add_filter( 'woocommerce_edit_account_form_fields', array( $this, 'wc_add_account_form_fields' ), 10, 1 );
 			add_action( 'woocommerce_save_account_details', array( $this, 'wc_save_account_form_fields' ), 10, 1 );
@@ -117,6 +119,45 @@ class Sign_In_With_Solana {
 
 
 	/**
+	 * Check if new users registration is enabled or not
+	 */
+	private function can_users_register() {
+		// WP Settings > General > "Anyone can register" option
+		if ( get_option( 'users_can_register' ) ) {
+			return true;
+		}
+
+		// WC Settings > Accounts & Privacy > Allow customers to create an account - on "My Account" page option
+		if ( is_woocommerce_activated() && ( 'yes' === get_option( 'woocommerce_enable_myaccount_registration' ) ) ) {
+			return true;
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Register a new user account using base58-encoded wallet address as username
+	 */
+	private function create_user_with_wallet_address( $address_b58 ) {
+		$address_b64 = $this->convert_base58_solana_address_to_base64( $address_b58 );
+		if ( is_wp_error( $address_b64 ) ) {
+			return null;
+		}
+
+		$username = 'sol_' . $address_b58; // add common prefix to simplify sorting and searching in users table
+		$user_id = wp_create_user( $username, wp_generate_password() );
+		if ( is_wp_error( $user_id ) ) {
+			return null;
+		}
+
+		$this->update_user_wallet_address( $user_id, $address_b58, $address_b64 );
+
+		return get_user( $user_id );
+	}
+
+
+	/**
 	 * Find a user account by base58-encoded wallet address
 	 */
 	private function get_user_by_wallet_address( $address_b58 ) {
@@ -144,10 +185,36 @@ class Sign_In_With_Solana {
 
 
 	/**
+	 * Update wallet address in base58 and base64 in user metadata
+	 */
+	private function update_user_wallet_address( $user_id, $address_b58, $address_b64 ) {
+		update_user_meta( $user_id, WALLET_ADDRESS_BASE58_META_KEY, $address_b58 );
+		update_user_meta( $user_id, WALLET_ADDRESS_BASE64_META_KEY, $address_b64 );
+	}
+
+
+	/**
 	 * Return a custom message string for wallet to sign
 	 */
 	private function get_message_to_sign() {
 		return 'Sign with your wallet to verify ownership and login to ' . wp_parse_url( get_site_url(), PHP_URL_HOST ) . '.';
+	}
+
+
+	/**
+	 * Convert a Base58-encoded Solana address to Base64
+	 */
+	private function convert_base58_solana_address_to_base64( $address_b58 ) {
+		if ( ! $this->is_solana_wallet_address( $address_b58 ) ) {
+			return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
+		}
+
+		$address_binary = $this->base58_decode( $address_b58 );
+		if ( 32 !== strlen( $address_binary ) ) { // Solana pubkeys are 32 bytes
+			return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
+		}
+
+		return base64_encode($address_binary);
 	}
 
 
@@ -223,15 +290,32 @@ class Sign_In_With_Solana {
 
 
 	/**
-	 * Add Sign-in button to the login page
+	 * Echo a button with the specified text in div container
 	 */
-	public function add_sign_in_button() {
+	public function echo_sign_in_button( $text ) {
 		$attr = 'sign_in_button';
 		$class = PLUGIN_ID . ' button wp-element-button';
-		$text = __( 'Login with Solana', 'sign-in-with-solana' );
 		$button = sprintf( '<button class="%s" data-attr="%s" type="button">%s</button>', $class, $attr, $text );
 
 		echo wp_kses_post( '<div style="display:none;clear:both;padding-top:1rem">' . $button . '</div>' );
+	}
+
+
+	/**
+	 * Add Login button to the login form
+	 */
+	public function add_login_button() {
+		$text = __( 'Login with Solana', 'sign-in-with-solana' );
+		$this->echo_sign_in_button( $text );
+	}
+
+
+	/**
+	 * Add Register button to the new user registration form
+	 */
+	public function add_register_button() {
+		$text = __( 'Register with Solana', 'sign-in-with-solana' );
+		$this->echo_sign_in_button( $text );
 	}
 
 
@@ -255,7 +339,8 @@ class Sign_In_With_Solana {
 				$address_b64 = '';
 
 				if ( ! empty( $address_b58 ) ) {
-					if ( ! $this->is_solana_wallet_address( $address_b58 ) ) {
+					$address_b64 = $this->convert_base58_solana_address_to_base64( $address_b58 );
+					if ( is_wp_error( $address_b64 ) ) {
 						return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
 					}
 
@@ -263,16 +348,9 @@ class Sign_In_With_Solana {
 					if ( $user && $user->ID !== $user_id ) {
 						return new \WP_Error( 'wallet_not_valid', __( 'Specified wallet address is already linked to another user', 'sign-in-with-solana' ) );
 					}
-
-					$address_binary = $this->base58_decode( $address_b58 );
-					if ( 32 !== strlen( $address_binary ) ) { // Solana pubkeys are 32 bytes
-						return new \WP_Error( 'wallet_not_valid', __( 'Specified Solana wallet address is not valid', 'sign-in-with-solana' ) );
-					}
-					$address_b64 = base64_encode($address_binary);
 				}
 
-				update_user_meta( $user_id, WALLET_ADDRESS_BASE58_META_KEY, $address_b58 );
-				update_user_meta( $user_id, WALLET_ADDRESS_BASE64_META_KEY, $address_b64 );
+				$this->update_user_wallet_address( $user_id, $address_b58, $address_b64 );
 			}
 		}
 
@@ -387,6 +465,16 @@ class Sign_In_With_Solana {
 
 		// get user associated with the wallet address
 		$user = $this->get_user_by_wallet_address( $address_b58 );
+
+		// register user if not found and allow registration is enabled
+		if ( ! $user && $this->can_users_register() ) {
+			$user = $this->create_user_with_wallet_address( $address_b58 );
+			if ( ! $user ) {
+				wp_send_json_error( 'User registration failed', 500 );
+			}
+		}
+
+		// return an error if the user is not found or cannot be registered
 		if ( ! $user ) {
 			wp_send_json_error( 'User account not found', 404 );
 		}

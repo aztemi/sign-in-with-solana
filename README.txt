@@ -19,7 +19,7 @@ This plugin adds a "Sign in with Solana" button to the login page, enabling wall
 
 == Features ==
 
-* Seamless integration with the WordPress and WooCommerce login form
+* Seamless integration with the WordPress and WooCommerce login forms
 * Secure wallet-based authentication
 * Supports popular Solana wallets (Phantom, Solflare, etc.)
 * No passwords required – users authenticate by signing a message with their wallet
@@ -45,10 +45,10 @@ This plugin adds a "Sign in with Solana" button to the login page, enabling wall
 Any wallet that supports Solana and message-based signing should work, including Phantom and Solflare.
 
 = How is user identity verified? =
-Users sign a challenge message with their wallet. The plugin verifies the signature to authenticate the user.
+Users sign a challenge message with their wallet. The plugin verifies the cryptographic signature to authenticate the user.
 
 = What happens if a user signs in for the first time? =
-A new WordPress user account is automatically created for them, using their wallet address as their username.
+If user registration is enabled (i.e., "Anyone can register" is checked under WordPress Settings > General), a new WordPress user account is automatically created, using the wallet address as the username.
 
 == Screenshots ==
 

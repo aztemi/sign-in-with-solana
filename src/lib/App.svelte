@@ -89,25 +89,29 @@
   }
 
   function updateSignInButton() {
-    const signInBtn = document.querySelector('[data-attr="sign_in_button"]');
-    if (!signInBtn) {
+    const signInBtns = document.querySelectorAll('[data-attr="sign_in_button"]');
+    if (!signInBtns.length) {
       return;
     }
 
-    signInBtn.addEventListener('click', handleSignInButtonClick);
+    signInBtns.forEach((signInBtn) => {
+      signInBtn.addEventListener('click', handleSignInButtonClick);
 
-    const containerDiv = getParent(signInBtn, 'div');
-    if (containerDiv) {
-      loginForm = getParent(containerDiv, 'form');
-      if (loginForm) {
-        loginForm.appendChild(containerDiv);
+      const containerDiv = getParent(signInBtn, 'div');
+      if (containerDiv) {
+        loginForm = getParent(containerDiv, 'form');
+        if (loginForm) {
+          loginForm.appendChild(containerDiv);
+        }
+
+        containerDiv.style.display = 'block';
       }
-
-      containerDiv.style.display = 'block';
-    }
+    });
 
     return () => {
-      signInBtn.removeEventListener('click', handleSignInButtonClick);
+      signInBtns?.forEach((signInBtn) => {
+        signInBtn.removeEventListener('click', handleSignInButtonClick);
+      });
     };
   }
 
