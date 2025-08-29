@@ -54,9 +54,6 @@ class Sign_In_With_Solana {
 		add_action( 'login_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
-		// allow display in wp_kses styles
-		add_filter( 'safe_style_css', array( $this, 'define_safe_style_css' ) );
-
 		// add Login & Register buttons
 		add_action( 'login_form', array( $this, 'add_login_button' ) );
 		add_action( 'register_form', array( $this, 'add_register_button' ) );
@@ -281,23 +278,11 @@ class Sign_In_With_Solana {
 
 
 	/**
-	 * Define safe CSS styles allowed with wp_kses
+	 * Show plugin button with the specified text in div container
 	 */
-	public function define_safe_style_css( $styles ) {
-		$styles[] = 'display';
-		return $styles;
-	}
-
-
-	/**
-	 * Echo a button with the specified text in div container
-	 */
-	public function echo_sign_in_button( $text ) {
-		$attr = 'sign_in_button';
-		$class = PLUGIN_ID . ' button button-hero wp-element-button';
-		$button = sprintf( '<button class="%s" data-attr="%s" type="button">%s</button>', $class, $attr, $text );
-
-		echo wp_kses_post( '<div style="display:none;clear:both;padding-top:1rem">' . $button . '</div>' );
+	public function display_sign_in_button( $text ) {
+		$class = 'button button-hero wp-element-button';
+		require PLUGIN_DIR . '/includes/templates/html-button.php';
 	}
 
 
@@ -306,7 +291,7 @@ class Sign_In_With_Solana {
 	 */
 	public function add_login_button() {
 		$text = __( 'Login with Solana', 'sign-in-with-solana' );
-		$this->echo_sign_in_button( $text );
+		$this->display_sign_in_button( $text );
 	}
 
 
@@ -315,7 +300,7 @@ class Sign_In_With_Solana {
 	 */
 	public function add_register_button() {
 		$text = __( 'Register with Solana', 'sign-in-with-solana' );
-		$this->echo_sign_in_button( $text );
+		$this->display_sign_in_button( $text );
 	}
 
 
