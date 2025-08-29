@@ -294,7 +294,7 @@ class Sign_In_With_Solana {
 	 */
 	public function echo_sign_in_button( $text ) {
 		$attr = 'sign_in_button';
-		$class = PLUGIN_ID . ' button wp-element-button';
+		$class = PLUGIN_ID . ' button button-hero wp-element-button';
 		$button = sprintf( '<button class="%s" data-attr="%s" type="button">%s</button>', $class, $attr, $text );
 
 		echo wp_kses_post( '<div style="display:none;clear:both;padding-top:1rem">' . $button . '</div>' );
