@@ -282,6 +282,7 @@ class Sign_In_With_Solana {
 	 */
 	public function display_sign_in_button( $text ) {
 		$class = 'button button-hero wp-element-button';
+		$icon = PLUGIN_URL . '/public/img/solana_icon.png';
 		require PLUGIN_DIR . '/includes/templates/html-button.php';
 	}
 

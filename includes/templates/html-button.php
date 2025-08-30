@@ -32,10 +32,23 @@ if ( ! defined( 'WPINC' ) ) {
 		height: 1px;
 		margin: 0 0.5rem;
 	}
+
+	.sign_in_with_solana_btn {
+		display: flex;
+		align-items: center;
+	}
+
+	.sign_in_with_solana_btn img {
+		width: 1.2rem;
+		margin-right: 0.7rem;
+	}
 	</style>
 
 	<div class="sign_in_with_solana_or"><?php echo esc_attr__('OR', 'sign-in-with-solana'); ?></div>
 	<button class="<?php echo esc_attr( $class ); ?>" data-attr="sign_in_button" type="button">
-		<?php echo esc_attr( $text ); ?>
+		<span class="sign_in_with_solana_btn">
+			<img src="<?php echo esc_attr( $icon ); ?>" alt="Solana icon" />
+			<span><?php echo esc_attr( $text ); ?></span>
+		</span>
 	</button>
 </div>
