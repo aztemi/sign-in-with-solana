@@ -13,7 +13,28 @@ if ( ! defined( 'WPINC' ) ) {
 }
 ?>
 
-<div class="<?php echo esc_attr( PLUGIN_ID ); ?>" style="display: none; clear: both; padding-top: 1rem;">
+<div class="<?php echo esc_attr( PLUGIN_ID ); ?>" style="display: none; text-align: center; clear: both; padding-top: 1rem;">
+	<style type="text/css">
+	.sign_in_with_solana_or {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: currentColor;
+		margin: 1rem 0;
+	}
+
+	.sign_in_with_solana_or:after,
+	.sign_in_with_solana_or:before {
+		content: '';
+		display: block;
+		background-color: currentColor;
+		width: 35%;
+		height: 1px;
+		margin: 0 0.5rem;
+	}
+	</style>
+
+	<div class="sign_in_with_solana_or"><?php echo esc_attr__('OR', 'sign-in-with-solana'); ?></div>
 	<button class="<?php echo esc_attr( $class ); ?>" data-attr="sign_in_button" type="button">
 		<?php echo esc_attr( $text ); ?>
 	</button>
