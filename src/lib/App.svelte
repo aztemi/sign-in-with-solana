@@ -33,16 +33,31 @@
     return null;
   }
 
+  function removeErrorMessages() {
+    const notices = document.querySelectorAll(
+      '#login_error, #login-message, .wc-block-components-notice-banner, .woocommerce-error, .woocommerce-message',
+    );
+    notices?.forEach((el) => el.remove());
+
+    loginForm?.classList.remove('shake');
+  }
+
+  function showErrorMessage(message) {
+    const notice = `<strong>Error:</strong> ${message}`;
+
+    const wcNoticesDiv = document.querySelector('.woocommerce-notices-wrapper');
+    if (wcNoticesDiv) {
+      wcNoticesDiv.insertAdjacentHTML('beforeend', `<div class="wc-block-components-notice-banner is-error" role="alert"><div>${notice}</div></div>`);
+      jQuery.scroll_to_notices && jQuery.scroll_to_notices(jQuery('[role="alert"]'));
+    } else {
+      loginForm?.classList.add('shake');
+      loginForm?.insertAdjacentHTML('beforebegin', `<div id="login_error" class="notice notice-error"><p>${notice}</p></div>`);
+    }
+  }
+
   async function signMessageAndLogin(event) {
     // remove previous notices if any
-    const notices = document.querySelectorAll('#login_error, #login-message');
-    if (notices?.length) {
-      notices.forEach((el) => el.remove());
-    }
-    if (loginForm) {
-      loginForm.classList.remove('shake');
-    }
-
+    removeErrorMessages();
     closeModal();
 
     // connect to selected wallet
@@ -74,11 +89,7 @@
           window.location.assign(response.data.redirect);
         } else {
           // Sign-in failed, show login error
-          loginForm.classList.add('shake');
-          loginForm.insertAdjacentHTML(
-            'beforebegin',
-            `<div id="login_error" class="notice notice-error"><p><strong>Error:</strong> ${response.data}</p></div>`,
-          );
+          showErrorMessage(response.data);
         }
       });
   }
