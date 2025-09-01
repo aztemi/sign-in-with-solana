@@ -480,11 +480,6 @@ class Sign_In_With_Solana {
 		wp_set_current_user( $user_id );
 		wp_set_auth_cookie( $user_id, true );
 
-		// set WooCommerce customer auth cookie, if WooCommerce is active
-		if ( is_woocommerce_activated() ) {
-			wc_set_customer_auth_cookie( $user_id );
-		}
-
 		// send success response with redirect URL to user's profile page
 		wp_send_json_success( array( 'message' => 'OK', 'redirect' => esc_url_raw( get_edit_profile_url() ) ), 200 );
 	}
