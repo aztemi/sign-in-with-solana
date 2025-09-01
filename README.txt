@@ -52,9 +52,11 @@ If user registration is enabled (i.e., "Anyone can register" is checked under Wo
 
 == Screenshots ==
 
-1. Sign-in with Solana button on the login screen
-2. Wallet authentication in progress
-3. User logged in successfully
+1. Login with Solana button on the Login page
+2. Register with Solana button on the Register page
+3. WooCommerce is also supported
+4. Wallet Address field on Users table list
+5. Update wallet address on user's profile
 
 == Source Code ==
 
