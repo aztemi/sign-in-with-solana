@@ -12,7 +12,7 @@
     window.Buffer = Buffer;
   }
 
-  $: ({ publicKey, wallet, connect, select } = $walletStore);
+  $: ({ publicKey, wallet, connect, disconnect, select } = $walletStore);
 
   const openModal = () => (modalVisible = true);
   const closeModal = () => (modalVisible = false);
@@ -72,24 +72,28 @@
     // sign message
     const encodedMsg = new TextEncoder().encode(message);
     const signature = await wallet.adapter.signMessage(encodedMsg);
+    const address = publicKey.toBase58();
+
+    // disconnect from wallet
+    await disconnect();
 
     // validate signature in backend
     jQuery
       .ajax({
         url: ajaxUrl,
         method: 'POST',
-        data: { action, nonce, address: publicKey.toBase58(), signature: bytesToBase64(signature) },
+        data: { action, nonce, address, signature: bytesToBase64(signature) },
       })
       .always((data_jqXHR, textStatus, jqXHR_errorThrown) => {
         const jqXHR = textStatus === 'success' ? jqXHR_errorThrown : data_jqXHR;
         const response = jqXHR.responseJSON;
 
-        if (true === response.success) {
+        if (true === response?.success) {
           // Sign-in OK, redirect
           window.location.assign(response.data.redirect);
         } else {
           // Sign-in failed, show login error
-          showErrorMessage(response.data);
+          showErrorMessage(response?.data);
         }
       });
   }
