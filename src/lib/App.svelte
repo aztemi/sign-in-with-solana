@@ -93,7 +93,7 @@
           window.location.assign(response.data.redirect);
         } else {
           // Sign-in failed, show login error
-          showErrorMessage(response?.data);
+          showErrorMessage(response?.data ?? 'Unknown login error. Please reload and try again.');
         }
       });
   }
