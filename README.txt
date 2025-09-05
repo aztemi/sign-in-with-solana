@@ -1,9 +1,9 @@
 === Sign-in With Solana ===
 Contributors: aztemi, t4top
 Donate link: https://apps.aztemi.com/sign-in-with-solana/donate/
-Tags: solana, wallet, web3, login, authentication, sign-in, crypto, blockchain, woocommerce
+Tags: solana, wallet, login, crypto, blockchain
 Requires at least: 5.2
-Tested up to: 6.8
+Tested up to: 6.8.2
 Requires PHP: 7.2
 Stable tag: 0.1.0
 License: GPLv3 or later
@@ -22,8 +22,8 @@ This plugin adds a "Sign in with Solana" button to the login page, enabling wall
 * Seamless integration with the WordPress and WooCommerce login forms
 * Secure wallet-based authentication
 * Supports popular Solana wallets (Phantom, Solflare, etc.)
-* No passwords required – users authenticate by signing a message with their wallet
 * Automatically creates new WordPress user accounts for new wallet sign-ins
+* No passwords required. Users authenticate by signing a message with their wallet
 * No setup required. The plugin works seamlessly after activation.
 
 == Installation ==

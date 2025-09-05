@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-05T21:42:31+00:00\n"
+"POT-Creation-Date: 2025-09-02T09:43:34+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: sign-in-with-solana\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #. Description of the plugin
 #: sign-in-with-solana.php
-msgid "Authenticate with Solana Wallets."
+msgid "Authenticate users with Solana Wallets."
 msgstr ""
 
 #. Author of the plugin
@@ -39,27 +39,41 @@ msgstr ""
 msgid "https://www.aztemi.link"
 msgstr ""
 
-#: includes/class-sign-in-with-solana.php:224
-msgid "Login with Solana"
+#: includes/class-sign-in-with-solana.php:102
+msgid "<b>Sign-in With Solana</b> plugin requires <b>GMP</b> or <b>BCMath</b>. Please install <b>GMP</b> or <b>BCMath</b> extension for PHP."
 msgstr ""
 
-#: includes/class-sign-in-with-solana.php:240
-msgid "Solana Wallet Address"
-msgstr ""
-
-#: includes/class-sign-in-with-solana.php:245
-msgid "If provided, the user will be able to sign in using the wallet."
-msgstr ""
-
-#: includes/class-sign-in-with-solana.php:266
-#: includes/class-sign-in-with-solana.php:276
+#: includes/class-sign-in-with-solana.php:206
+#: includes/class-sign-in-with-solana.php:211
+#: includes/class-sign-in-with-solana.php:330
 msgid "Specified Solana wallet address is not valid"
 msgstr ""
 
-#: includes/class-sign-in-with-solana.php:271
+#: includes/class-sign-in-with-solana.php:294
+msgid "Login with Solana"
+msgstr ""
+
+#: includes/class-sign-in-with-solana.php:303
+msgid "Register with Solana"
+msgstr ""
+
+#: includes/class-sign-in-with-solana.php:335
 msgid "Specified wallet address is already linked to another user"
 msgstr ""
 
-#: includes/class-sign-in-with-solana.php:292
+#: includes/class-sign-in-with-solana.php:356
+#: includes/class-sign-in-with-solana.php:386
+msgid "Solana Wallet Address"
+msgstr ""
+
+#: includes/class-sign-in-with-solana.php:361
+msgid "If provided, the user will be able to sign in using the wallet."
+msgstr ""
+
+#: includes/class-sign-in-with-solana.php:408
 msgid "Wallet Address"
+msgstr ""
+
+#: includes/templates/html-button.php:47
+msgid "OR"
 msgstr ""

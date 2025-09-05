@@ -1,7 +1,7 @@
 {
   "name": "sign-in-with-solana",
   "version": "0.1.0",
-  "description": "Authenticate with Solana Wallet",
+  "description": "Authenticate users with Solana Wallet",
   "author": "aztemi",
   "license": "GPL-3.0-or-later",
   "private": true,
