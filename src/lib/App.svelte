@@ -6,6 +6,7 @@
 
   let modalVisible = false;
   let loginForm = null;
+  let mountTime = 0;
   let wallets = [];
 
   if (typeof window !== 'undefined' && !window.Buffer) {
@@ -67,10 +68,15 @@
       return;
     }
 
-    const { ajaxUrl, action, nonce, message } = SignInWithSolana;
+    const { ajaxUrl, action, nonce, message, svrTime } = SignInWithSolana;
+
+    // Add nonce and timestamp to message to sign
+    const elapsed = Math.floor((Date.now() - mountTime) / 1000);
+    const timestamp = parseInt(svrTime, 10) + elapsed;
+    const messageToSign = `${message} (nonce: ${nonce}, timestamp: ${timestamp})`;
 
     // sign message
-    const encodedMsg = new TextEncoder().encode(message);
+    const encodedMsg = new TextEncoder().encode(messageToSign);
     const signature = await wallet.adapter.signMessage(encodedMsg);
     const address = publicKey.toBase58();
 
@@ -82,7 +88,7 @@
       .ajax({
         url: ajaxUrl,
         method: 'POST',
-        data: { action, nonce, address, signature: bytesToBase64(signature) },
+        data: { action, nonce, timestamp, address, signature: bytesToBase64(signature) },
       })
       .always((data_jqXHR, textStatus, jqXHR_errorThrown) => {
         const jqXHR = textStatus === 'success' ? jqXHR_errorThrown : data_jqXHR;
@@ -139,6 +145,7 @@
 
   onMount(async () => {
     await initWallets();
+    mountTime = Date.now();
     return updateSignInButton();
   });
 </script>

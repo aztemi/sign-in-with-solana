@@ -270,6 +270,7 @@ class Sign_In_With_Solana {
 				'pluginId' => PLUGIN_ID,
 				'action'   => SIGN_IN,
 				'nonce'    => wp_create_nonce('ajax_nonce'),
+				'svrTime'  => time(),
 				'message'  => $this->get_message_to_sign(),
 			)
 		);
@@ -425,6 +426,7 @@ class Sign_In_With_Solana {
 	 *
 	 * Expected POST parameters:
 	 * - nonce     (string) : AJAX nonce for CSRF protection.
+	 * - timestamp (string) : Reference timestamp. Must be within 1 hour from server time to be valid.
 	 * - signature (string) : Base64-encoded signature of the message to verify identity.
 	 * - address   (string) : Base58-encoded public wallet address (Solana public key).
 	 *
@@ -433,8 +435,23 @@ class Sign_In_With_Solana {
 	 * - On failure: JSON error with appropriate HTTP status code.
 	 */
 	public function validate_and_login() {
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'ajax_nonce' ) ) {
-			wp_send_json_error( 'Invalid nonce', 403);
+		// validate nonce
+		$nonce = isset( $_POST['nonce'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'ajax_nonce' ) ) {
+			wp_send_json_error( 'Invalid nonce. Please reload and try again.', 403);
+		}
+
+		// validate reference timestamp
+		$timestamp = isset( $_POST['timestamp'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['timestamp'] ) ) ) : '';
+		if ( empty( $timestamp ) ) {
+			wp_send_json_error( 'Bad Request - Timestamp missing', 400 );
+		}
+
+		// reference timestamp must be within 1 hour
+		$now = time();
+		$timestamp = intval( $timestamp );
+		if ( ( $timestamp > $now ) || ( $now - $timestamp > HOUR_IN_SECONDS ) ) {
+			wp_send_json_error( 'Timestamp expired. Please reload and try again.', 400 );
 		}
 
 		// retrieve base64-encoded signature
@@ -468,6 +485,9 @@ class Sign_In_With_Solana {
 		$user_id = $user->ID;
 		$message  = $this->get_message_to_sign();
 		$address_b64 = $this->get_user_wallet_address( $user_id, 'b64' );
+
+		// add nonce and timestamp to message to sign
+		$message = sprintf( '%s (nonce: %s, timestamp: %s)', $message, $nonce, $timestamp );
 
 		// verify the signature
 		$verified = $this->verify_signature_base64( $message, $signature_b64, $address_b64 );
