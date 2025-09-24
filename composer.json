@@ -1,6 +1,6 @@
 {
   "name": "aztemi/sign-in-with-solana",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Authenticate with Solana Wallet",
   "author": "aztemi",
   "type": "wordpress-plugin",

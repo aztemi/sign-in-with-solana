@@ -5,7 +5,7 @@ Tags: solana, wallet, login, crypto, blockchain
 Requires at least: 5.2
 Tested up to: 6.8.2
 Requires PHP: 7.2
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -64,10 +64,13 @@ This plugin is an open source software with [GPLv3 or later](https://www.gnu.org
 
 == Changelog ==
 
+= 0.2.0 =
+* Add nonce and timestamp to signed message to mitigate against CSRF attacks
+
 = 0.1.0 =
 * Initial release
 
 == Upgrade Notice ==
 
-= 0.1.0 =
-First stable version.
+= 0.2.0 =
+Nonce and timestamp added to signed message. Upgrade for improved security.

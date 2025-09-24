@@ -3,7 +3,7 @@
  * Plugin Name: Sign-in With Solana
  * Plugin URI:  https://apps.aztemi.com/sign-in-with-solana
  * Description: Authenticate users with Solana Wallets.
- * Version:     0.1.0
+ * Version:     0.2.0
  * Author:      AZTemi
  * Author URI:  https://www.aztemi.link
  * License:     GPLv3 or later
