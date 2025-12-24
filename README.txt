@@ -3,9 +3,9 @@ Contributors: aztemi, t4top
 Donate link: https://apps.aztemi.com/sign-in-with-solana/donate/
 Tags: solana, wallet, login, crypto, blockchain
 Requires at least: 5.2
-Tested up to: 6.8.2
+Tested up to: 6.9
 Requires PHP: 7.2
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -64,6 +64,9 @@ This plugin is an open source software with [GPLv3 or later](https://www.gnu.org
 
 == Changelog ==
 
+= 0.2.1 =
+* Upgrade package dependencies and verify support for WordPress 6.9
+
 = 0.2.0 =
 * Add nonce and timestamp to signed message to mitigate against CSRF attacks
 
@@ -72,5 +75,5 @@ This plugin is an open source software with [GPLv3 or later](https://www.gnu.org
 
 == Upgrade Notice ==
 
-= 0.2.0 =
-Nonce and timestamp added to signed message. Upgrade for improved security.
+= 0.2.1 =
+Package dependencies updated. Upgrade for latest WordPress support.
