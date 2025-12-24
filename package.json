@@ -42,8 +42,8 @@
     "svelte-loader": "^3.1.9"
   },
   "dependencies": {
-    "@aztemi/svelte-on-solana-wallet-adapter-core": "^1.2.1",
-    "@aztemi/svelte-on-solana-wallet-adapter-ui": "^1.2.1",
+    "@aztemi/svelte-on-solana-wallet-adapter-core": "^1.2.2",
+    "@aztemi/svelte-on-solana-wallet-adapter-ui": "^1.2.2",
     "@solana/wallet-adapter-wallets": "^0.19.37",
     "buffer": "^6.0.3"
   }
